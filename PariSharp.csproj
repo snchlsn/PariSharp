@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectGuid>{A3579F60-275B-46F8-B398-DDBF24FEA1CB}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PariSharp</RootNamespace>
+    <AssemblyName>PariSharp</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <NoWin32Manifest>False</NoWin32Manifest>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE;TEST</DefineConstants>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NUnit.Framework">
+      <HintPath>$(SharpDevelopBinPath)\Tools\NUnit\NUnit.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Arithmetic.cs" />
+    <Compile Include="BigPrimeEnumerator.cs">
+      <DependentUpon>BigPrimeSieve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BigPrimeSieve.cs" />
+    <Compile Include="Column.cs" />
+    <Compile Include="FactorOptions.cs" />
+    <Compile Include="Fraction.cs" />
+    <Compile Include="Matrix.cs" />
+    <Compile Include="MatrixEnumerator.cs">
+      <DependentUpon>Matrix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModularKernel.cs" />
+    <Compile Include="PariComplex.cs" />
+    <Compile Include="PariInteger.cs" />
+    <Compile Include="PariListBase.cs" />
+    <Compile Include="PariListBaseEnumerator.cs">
+      <DependentUpon>PariListBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PariObject.cs" />
+    <Compile Include="PariType.cs" />
+    <Compile Include="PrimalityTest.cs" />
+    <Compile Include="PrimeEnumerator.cs">
+      <DependentUpon>PrimeSieve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GP.cs" />
+    <Compile Include="PrimeSieve.cs" />
+    <Compile Include="PrimeSieveTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Real.cs" />
+    <Compile Include="SmallIntEnumerator.cs">
+      <DependentUpon>SmallIntVector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SmallIntVector.cs" />
+    <Compile Include="TextStyle.cs" />
+    <Compile Include="Vector.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
