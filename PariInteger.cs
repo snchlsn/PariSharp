@@ -9,9 +9,11 @@ namespace PariSharp
 	#region Header
 	//TODO: Add support for longs and ulongs.
 	/// <summary>
-	/// Wraps PARI's t_INT type and related functions.
+	/// Represents an arbitrarily large integer.
 	/// </summary>
 	/// <remarks>
+	/// This class is a wrapper for PARI's t_INT type and related functions.
+	/// <para/>
 	/// All public methods that return <see cref="PariObject"/>s (including constructors and operators)
 	/// clutter GP's stack unless otherwise noted (that is, the value returned is a new object in unmanaged memory).
 	/// All methods that return primitive types are guaranteed not to clutter the stack, as are all property getters,
@@ -20,6 +22,8 @@ namespace PariSharp
 	#endregion
 	public class PariInteger: PariObject, IEquatable<PariInteger>, IComparable<PariInteger>, IConvertible
 	{
+		private const byte signShift = 30;
+		
 		#region Constants
 		private static PariInteger zero, one, negOne, two, negTwo;
 		
@@ -58,6 +62,11 @@ namespace PariSharp
 		public bool IsOdd
 		{
 			get { return mpodd(Address); }
+		}
+		
+		public sbyte Sign
+		{
+			get { return (sbyte)(GetElementSigned(1) >> signShift); }
 		}
 		
 		#region IComparable implementation
@@ -137,14 +146,26 @@ namespace PariSharp
 		
 		public long ToInt64(IFormatProvider format = null)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException(); //TODO: Implement.
 		}
 		
+		#region Header
+		/// <inheritdoc/>
+		/// <exception cref="System.OverflowException">
+		/// The <c>PariInteger</c> is negative or too large to be represented as a <c>byte</c>.
+		/// </exception>
+		#endregion
 		public byte ToByte(IFormatProvider format = null)
 		{
 			return (byte)ToUInt32(format);
 		}
 		
+		#region Header
+		/// <inheritdoc/>
+		/// <exception cref="System.OverflowException">
+		/// The <c>PariInteger</c> is negative or too large to be represented as a <c>ushort</c>.
+		/// </exception>
+		#endregion
 		public ushort ToUInt16(IFormatProvider format = null)
 		{
 			return (ushort)ToUInt32(format);
@@ -168,27 +189,58 @@ namespace PariSharp
 		
 		public ulong ToUInt64(IFormatProvider format = null)
 		{
-			throw new NotImplementedException(); //TODO: Implement.
+			if (Sign < 0)
+				throw new OverflowException();
+			
+			switch (Length)
+			{
+				case 0:
+					return 0;
+				
+				case 1:
+					return GetElement(2);
+				
+				case 2:
+					return ((ulong)GetElement(2) << 32) | GetElement(3);
+				default:
+					throw new OverflowException();
+			}
 		}
 		
 		public float ToSingle(IFormatProvider format = null)
 		{
-			throw new NotImplementedException(); //TODO: Implement.
+			return (float)gtodouble(Address); //TODO: Add overflow detection, if possible.
 		}
 		
 		public double ToDouble(IFormatProvider format = null)
 		{
-			throw new NotImplementedException(); //TODO: Implement.
+			return gtodouble(Address); //TODO: Add overflow detection, if possible.
 		}
 		
 		public decimal ToDecimal(IFormatProvider format = null)
 		{
-			throw new NotImplementedException(); //TODO: Implement.
+			switch (Length)
+			{
+				case 0:
+					return decimal.Zero;
+				
+				case 1:
+					return new Decimal(GetElementSigned(2), 0, 0, Sign < 0, 0);
+				
+				case 2:
+					return new Decimal(GetElementSigned(3), GetElementSigned(2), 0, Sign < 0, 0);
+				
+				case 3:
+					return new Decimal(GetElementSigned(4), GetElementSigned(3), GetElementSigned(2), Sign < 0, 0);
+				
+				default:
+					throw new OverflowException();
+			}
 		}
 		
 		public DateTime ToDateTime(IFormatProvider format = null)
 		{
-			throw new NotImplementedException(); //TODO: Implement.
+			return new DateTime(ToInt64(format));
 		}
 		
 		public string ToString(IFormatProvider format)
@@ -224,6 +276,7 @@ namespace PariSharp
 		
 		#region Operators
 		//Do not attempt to implement increment and decrement operators; results would not be as expected.
+		//Also do not wrap comparisons to uints as operators; they compare absolute values, which should be made clear in client code.
 		
 		public static PariInteger operator +(PariInteger x, PariInteger y)
 		{
@@ -420,16 +473,6 @@ namespace PariSharp
 			return equalsi(x, y.Address);
 		}
 		
-		public static bool operator ==(PariInteger x, uint y)
-		{
-			return equalui(y, x.Address);
-		}
-		
-		public static bool operator ==(uint x, PariInteger y)
-		{
-			return equalui(x, y.Address);
-		}
-		
 		public static bool operator !=(PariInteger x, PariInteger y)
 		{
 			return equalii(x.Address, y.Address);
@@ -445,14 +488,64 @@ namespace PariSharp
 			return equalsi(x, y.Address);
 		}
 		
-		public static bool operator !=(PariInteger x, uint y)
+		public static bool operator >(PariInteger x, PariInteger y)
 		{
-			return equalui(y, x.Address);
+			return cmpii(x.Address, y.Address) > 0;
 		}
 		
-		public static bool operator !=(uint x, PariInteger y)
+		public static bool operator >(PariInteger x, int y)
 		{
-			return equalui(x, y.Address);
+			return cmpsi(y, x.Address) < 0;
+		}
+		
+		public static bool operator >(int x, PariInteger y)
+		{
+			return cmpsi(x, y.Address) > 0;
+		}
+		
+		public static bool operator <(PariInteger x, PariInteger y)
+		{
+			return cmpii(x.Address, y.Address) < 0;
+		}
+		
+		public static bool operator <(PariInteger x, int y)
+		{
+			return cmpsi(y, x.Address) > 0;
+		}
+		
+		public static bool operator <(int x, PariInteger y)
+		{
+			return cmpsi(x, y.Address) < 0;
+		}
+		
+		public static bool operator >=(PariInteger x, PariInteger y)
+		{
+			return cmpii(x.Address, y.Address) >= 0;
+		}
+		
+		public static bool operator >=(PariInteger x, int y)
+		{
+			return cmpsi(y, x.Address) <= 0;
+		}
+		
+		public static bool operator >=(int x, PariInteger y)
+		{
+			return cmpsi(x, y.Address) >= 0;
+		}
+		
+		public static bool operator <=(PariInteger x, PariInteger y)
+		{
+			return cmpii(x.Address, y.Address) <= 0;
+		}
+		
+		public static bool operator <=(PariInteger x, int y)
+		{
+			return cmpsi(y, x.Address) >= 0;
+		}
+		
+		public static bool operator <=(int x, PariInteger y)
+		{
+			return cmpsi(x, y.Address) <= 0;
 		}
 		
 		public static PariInteger operator ~(PariInteger x)
@@ -586,6 +679,138 @@ namespace PariSharp
 			return new PariInteger(absi(Address));
 		}
 		
+		#region Absolute value comparisons
+		public int AbsCompareTo(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_cmp(Address, other.Address);
+		}
+		
+		public int AbsCompareTo(uint other)
+		{
+			return cmpiu(Address, other);
+		}
+		
+		public bool AbsEquals(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_equal(Address, other.Address);
+		}
+		
+		public bool AbsEquals(uint other)
+		{
+			return equalui(other, Address);
+		}
+		
+		public bool AbsGreaterThan(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_cmp(Address, other.Address) > 0;
+		}
+		
+		public bool AbsGreaterThan(uint other)
+		{
+			return cmpiu(Address, other) > 0;
+		}
+		
+		public bool AbsGreaterThanOrEqual(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_cmp(Address, other.Address) >= 0;
+		}
+		
+		public bool AbsGreaterThanOrEqual(uint other)
+		{
+			return cmpiu(Address, other) >= 0;
+		}
+		
+		public bool AbsLessThan(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_cmp(Address, other.Address) < 0;
+		}
+		
+		public bool AbsLessThan(uint other)
+		{
+			return cmpiu(Address, other) < 0;
+		}
+		
+		public bool AbsLessThanOrEqual(PariInteger other)
+		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
+			return absi_cmp(Address, other.Address) <= 0;
+		}
+		
+		public bool AbsLessThanOrEqual(uint other)
+		{
+			return cmpiu(Address, other) <= 0;
+		}
+		#endregion
+		
+		#region Header
+		/// <summary>
+		/// Performs integer division using an optimized algorithm that assumes that the divisor is known to exactly
+		/// divide the dividend.
+		/// </summary>
+		/// <param name="divisor">The divisor.</param>
+		/// <returns>The result of dividing this integer by <paramref name="divisor"/>.</returns>
+		/// <remarks>
+		/// Only use this method for known exact divisors.  If that assumption does not hold, the return value
+		/// is undefined and no exception is thrown.
+		/// </remarks>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="divisor"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
+		public PariInteger DivExact(PariInteger divisor)
+		{
+			if (divisor == null)
+				throw new ArgumentNullException("divisor");
+			
+			if (divisor.Length == 0)
+				throw new DivideByZeroException();
+			
+			return new PariInteger(diviiexact(Address, divisor.Address));
+		}
+		
+		#region Header
+		/// <summary>
+		/// Performs integer division using an optimized algorithm that assumes that the divisor is known to exactly
+		/// divide the dividend.
+		/// </summary>
+		/// <param name="divisor">The divisor.</param>
+		/// <returns>The result of dividing this integer by <paramref name="divisor"/>.</returns>
+		/// <remarks>
+		/// Only use this method for known exact divisors.  If that assumption does not hold, the return value
+		/// is undefined and no exception is thrown.
+		/// </remarks>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
+		public PariInteger DivExact(uint divisor)
+		{
+			if (divisor == 0)
+				throw new DivideByZeroException();
+			
+			return new PariInteger(diviuexact(Address, divisor));
+		}
+		
 		#region Header
 		/// <summary>
 		/// Performs integer division.  Unlike the division operator, this method rounds rational results
@@ -611,6 +836,11 @@ namespace PariSharp
 			return new PariInteger(diviiround(Address, divisor.Address));
 		}
 		
+		public Vector Divisors()
+		{
+			return new Vector(divisors(Address));
+		}
+		
 		#region Header
 		/// <summary>
 		/// Computes the 2-adic valuation of the integer (i.e., the number of trailing zeroes in the binary expansion).
@@ -620,6 +850,16 @@ namespace PariSharp
 		public int DyadicVal()
 		{
 			return vali(Address);
+		}
+		
+		public Matrix Factor()
+		{
+			return new Matrix(factor(Address));
+		}
+		
+		public Matrix FactorBounded(uint lim)
+		{
+			return new Matrix(boundfact(Address, lim));
 		}
 		
 		#region Header
@@ -633,6 +873,21 @@ namespace PariSharp
 			return new PariInteger(hammingweight(Address));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Gets the integer modulo a power of 2.
+		/// </summary>
+		/// <param name="pow">The exponent of the modulus.</param>
+		/// <returns>The integer mod 2^<paramref name="pow"/>.</returns>
+		/// <remarks>
+		/// This method calls PARI functions that use hardcoded powers of 2. The range of hardcoded exponents
+		/// is 1-6, inclusive, and 32.  For exponents outside this range, the modulo operator, bitwise and operator, or
+		/// <see cref="TrueEuclideanRem"/> methods should be used instead.
+		/// </remarks>
+		/// <exception cref="System.ArgumentOutOfRangeException">
+		/// <paramref name="pow"/> is outside the allowed range of 1-6 and 32.
+		/// </exception>
+		#endregion
 		public uint ModPow2(byte pow)
 		{
 			switch (pow)
@@ -658,7 +913,7 @@ namespace PariSharp
 		
 		#region Header
 		/// <summary>
-		/// Gets the number of distinct prime divisors of this integer.
+		/// Gets the number of distinct prime divisors of the integer.
 		/// </summary>
 		/// <returns>The number of prime divisors.</returns>
 		#endregion
@@ -669,7 +924,7 @@ namespace PariSharp
 		
 		#region Header
 		/// <summary>
-		/// Computes the square of this integer.
+		/// Computes the square of the integer.
 		/// </summary>
 		/// <returns>The integer squared.</returns>
 		#endregion
@@ -680,6 +935,13 @@ namespace PariSharp
 		
 		#region External PARI functions
 		#region Arithmetic functions
+		#region Header
+		/// <summary>
+		/// Gets the absolute value of a t_INT.
+		/// </summary>
+		/// <param name="x">A t_INT.</param>
+		/// <returns>|<paramref name="x"/>|</returns>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern IntPtr absi(IntPtr x);
 		
@@ -698,6 +960,18 @@ namespace PariSharp
 		[DllImport(GP.DllName)]
 		private static extern IntPtr divii(IntPtr x, IntPtr y);
 		
+		#region Header
+		/// <summary>
+		/// Computes a quotient using an optimized algorithm that assumes that the divsor does exactly divide the
+		/// dividend.
+		/// </summary>
+		/// <param name="x">The dividend, as a t_INT.</param>
+		/// <param name="y">The divisor, as a t_INT.  Must be a known divisor of <paramref name="x"/>.</param>
+		/// <returns><paramref name="x"/>/<paramref name="y"/>, as a t_INT.</returns>
+		#endregion
+		[DllImport(GP.DllName)]
+		private static extern IntPtr diviiexact(IntPtr x, IntPtr y);
+		
 		[DllImport(GP.DllName)]
 		private static extern IntPtr diviiround(IntPtr x, IntPtr y);
 		
@@ -708,10 +982,42 @@ namespace PariSharp
 		private static extern IntPtr diviu(IntPtr x, uint y);
 		
 		[DllImport(GP.DllName)]
+		private static extern IntPtr diviuexact(IntPtr x, uint y);
+		
+		[DllImport(GP.DllName)]
 		private static extern IntPtr divsi(int x, IntPtr y);
 		
 		[DllImport(GP.DllName)]
 		private static extern IntPtr divui(uint x, IntPtr y);
+		
+		#region Header
+		/// <summary>
+		/// Checks whether one t_INT divides another.
+		/// </summary>
+		/// <param name="x">The dividend, as a t_INT.</param>
+		/// <param name="y">The divisor, as a t_INT.</param>
+		/// <returns>
+		/// <c>true</c> if <paramref name="y"/> divides <paramref name="x"/>; <c>false</c> otherwise.
+		/// </returns>
+		/// <remarks>
+		/// This routine does still treat the case where <paramref name="y"/> is 0 as an error condition,
+		/// rather than returning <c>false</c>.
+		/// </remarks>
+		#endregion
+		[DllImport(GP.DllName)]
+		private static extern bool dvdii(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdis(IntPtr x, int y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdiu(IntPtr x, uint y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdsi(int x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdui(uint x, IntPtr y);
 		
 		#region Header
 		/// <summary>
@@ -721,7 +1027,7 @@ namespace PariSharp
 		/// <param name="y">The divisor.</param>
 		/// <returns>The remainder.</returns>
 		/// <remarks>
-		/// Despite the nomenclature, this function is not consistent with the behavior of C#'s modulus operator,
+		/// Despite the nomenclature, this function is not consistent with the behavior of C#'s modulo operator,
 		/// as it will always return a posistive value.
 		/// </remarks>
 		#endregion
@@ -745,7 +1051,7 @@ namespace PariSharp
 		/// Computes the factorial of an integer.
 		/// </summary>
 		/// <param name="x">The operand.  Must be positive.</param>
-		/// <returns>A pointer to <paramref name="x"/>!, in t_INT form.</returns>
+		/// <returns><paramref name="x"/>!, in t_INT form.</returns>
 		#endregion
 		[DllImport(GP.DllName)]
 		private static extern IntPtr mpfact(int x);
@@ -762,6 +1068,13 @@ namespace PariSharp
 		[DllImport(GP.DllName)]
 		private static extern IntPtr muluui(uint x, uint y, IntPtr z);
 		
+		#region Header
+		/// <summary>
+		/// Negates a t_INT.
+		/// </summary>
+		/// <param name="x">The t_INT to negate.</param>
+		/// <returns>-<paramref name="x"/></returns>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern IntPtr negi(IntPtr x);
 		
@@ -777,7 +1090,7 @@ namespace PariSharp
 		/// <returns>The remainder.</returns>
 		/// <remarks>
 		/// The remainder computed by this function keeps the sign of the dividend, which is consistent with the behavior
-		/// of C#'s modulus operator.
+		/// of C#'s modulo operator.
 		/// </remarks>
 		#endregion
 		[DllImport(GP.DllName)]
@@ -816,8 +1129,16 @@ namespace PariSharp
 		private static extern int absi_cmp(IntPtr x, IntPtr y);
 		
 		[DllImport(GP.DllName)]
-		private static extern int absi_equal(IntPtr x, IntPtr y);
+		private static extern bool absi_equal(IntPtr x, IntPtr y);
 		
+		#region Header
+		/// <summary>
+		/// Compares the values of two t_INTs.
+		/// </summary>
+		/// <param name="x">A t_INT.</param>
+		/// <param name="y">A t_INT.</param>
+		/// <returns>The sign of <paramref name="x"/> - <paramref name="y"/>.</returns>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern int cmpii(IntPtr x, IntPtr y);
 		
@@ -825,8 +1146,16 @@ namespace PariSharp
 		private static extern int cmpsi(int x, IntPtr y);
 		
 		[DllImport(GP.DllName)]
-		private static extern int cmpui(uint x, IntPtr y);
+		private static extern int cmpiu(IntPtr x, uint y);
 		
+		#region Header
+		/// <summary>
+		/// Checks two t_INTs for equality.
+		/// </summary>
+		/// <param name="x">A t_INT.</param>
+		/// <param name="y">A t_INT.</param>
+		/// <returns><c>true</c> if the arguments are equal; <c>false</c> otherwise.</returns>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern bool equalii(IntPtr x, IntPtr y);
 		
@@ -970,12 +1299,39 @@ namespace PariSharp
 		[DllImport(GP.DllName)]
 		private static extern int itos(IntPtr x);
 		
+		
+		#region Header
+		/// <summary>
+		/// Attempts to convert a t_INT to an <c>int</c>.
+		/// </summary>
+		/// <param name="x">The t_INT to convert.</param>
+		/// <returns>
+		/// The value of <paramref name="x"/> as an <c>int</c>, or 0 if the value cannot be represented as an <c>int</c>.
+		/// </returns>
+		/// <remarks>
+		/// The caller must take care to differentiate between an overflow condition and the case where the
+		/// value of <paramref name="x"/> is 0, as they both result in the same return value.
+		/// </remarks>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern int itos_or_0(IntPtr x);
 		
 		[DllImport(GP.DllName)]
 		private static extern uint itou(IntPtr x);
 		
+		#region Header
+		/// <summary>
+		/// Attempts to convert a t_INT to a <c>uint</c>.
+		/// </summary>
+		/// <param name="x">The t_INT to convert.</param>
+		/// <returns>
+		/// The value of <paramref name="x"/> as a <c>uint</c>, or 0 if the value cannot be represented as a <c>uint</c>.
+		/// </returns>
+		/// <remarks>
+		/// The caller must take care to differentiate between an overflow condition and the case where the
+		/// value of <paramref name="x"/> is 0, as they both result in the same return value.
+		/// </remarks>
+		#endregion
 		[DllImport(GP.DllName)]
 		private static extern uint itou_or_0(IntPtr x);
 		
@@ -1043,6 +1399,17 @@ namespace PariSharp
 		#endregion
 		public PariInteger(uint num): base(utoi(num)) {}
 		
+		#region Header
+		/// <summary>
+		/// Creates a <c>PariInteger</c> from two <c>uint</c>s.
+		/// </summary>
+		/// <param name="upper">The most significant of the two words.</param>
+		/// <param name="lower">The least significant of the two words.</param>
+		/// <param name="neg">
+		/// <c>true</c> if the new <c>PariInteger</c> should be negative; <c>false</c> otherwise.  The default
+		/// value is <c>false</c>.
+		/// </param>
+		#endregion
 		public PariInteger(uint upper, uint lower, bool neg = false): base(neg ? uutoineg(upper, lower) : uutoi(upper, lower)) {}
 		
 		public PariInteger(params uint[] a): base(mkintn(a.Length, a)) {}

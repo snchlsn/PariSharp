@@ -1,5 +1,6 @@
 ﻿#region Using directives
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 #endregion
 
@@ -35,8 +36,28 @@ namespace PariSharp
 			return;
 		}
 		
+		#region Header
+		/// <summary>
+		/// Frees memory on the PARI stack allocated to a given <see cref="PariObject"/> and all <see cref="PariObject"/>s
+		/// created after it.
+		/// </summary>
+		/// <param name="x">The <see cref="PariObject"/> to deallocate.</param>
+		/// <remarks>
+		/// This is an O(1) operation, as all it does is move the stack pointer.
+		/// <para/>
+		/// The caller must pay attention to the order of creation of <see cref="PariObjects"/> to ensure that no
+		/// memory that is still needed is freed, and also that all memory that sould be freed is.  This is
+		/// especially important when dealing with container types, like <see cref="Vector"/> and <see cref="Fraction"/>.
+		/// </remarks>
+		/// <exception cref="System.ArgumentExcception">
+		/// <paramref name="x"/> is not on the PARI stack.
+		/// </exception>
+		#endregion
 		public static void Free(PariObject x)
 		{
+			if (!x.IsOnStack)
+				throw new ArgumentException("Attempt made to free an object that is not on the PARI stack.", "x");
+			
 			cgiv(x.Address);
 			return;
 		}
@@ -64,10 +85,65 @@ namespace PariSharp
 		#endregion
 		public static void Initialize(uint size = 500000, uint maxPrime = 0)
 		{
+			int stackTopInt;
+			PariInteger temp;
+			
 			pari_init(size, maxPrime);
-			stackTop = new PariInteger(5).Address;
+			stackTopInt = (temp = new PariInteger(5)).Address.ToInt32();
+			stackTopInt -= GetStackSize();
+			stackTopInt += temp.Size << 2;
+			stackTop = new IntPtr(stackTopInt);
 			ClearStack();
 			PariInteger.InitializeConstants();
+			return;
+		}
+		
+		public static Vector ReadVector(string fileName)
+		{
+			Vector vec;
+			
+			using (FileStream fileStream = new FileInfo(fileName).OpenRead())
+			{
+				vec = new Vector(gp_readvec_stream(fileStream.SafeFileHandle.DangerousGetHandle()));
+			}
+			return vec;
+		}
+		
+		public static Vector ReadVector(FileInfo file)
+		{
+			if (file == null)
+				throw new ArgumentNullException("file");
+			
+			Vector vec;
+			
+			using (FileStream fileStream = file.OpenRead())
+			{
+				vec = new Vector(gp_readvec_stream(fileStream.SafeFileHandle.DangerousGetHandle()));
+			}
+			return vec;
+		}
+		
+		#region Header
+		/// <summary>
+		/// Frees memory on the PARI stack allocated to a given <see cref="PariObject"/> and all <see cref="PariObject"/>s
+		/// created after it.
+		/// </summary>
+		/// <param name="x">The <see cref="PariObject"/> to deallocate.</param>
+		/// <remarks>
+		/// This is an O(1) operation, as all it does is move the stack pointer.
+		/// <para/>
+		/// The caller must pay attention to the order of creation of <see cref="PariObjects"/> to ensure that no
+		/// memory that is still needed is freed, and also that all memory that should be freed is.  This is
+		/// especially important when dealing with container types, like <see cref="Vector"/> and <see cref="Fraction"/>.
+		/// <para/>
+		/// This method accepts arguments that are not on the PARI stack.  If such an argument is passed, no memory
+		/// is freed, no action is taken, and the caller is not notified that the attempt failed.  If notification
+		/// is needed, use the <see cref="Free"/> method instead.
+		/// </remarks>
+		#endregion
+		public static void TryFree(PariObject x)
+		{
+			cgiv(x.Address);
 			return;
 		}
 		
@@ -75,8 +151,24 @@ namespace PariSharp
 		[DllImport(DllName)]
 		private static extern void cgiv(IntPtr z);
 		
+		#region Header
+		/// <summary>
+		/// The amount of memory on the PARI stack that is currently in use, in bytes.
+		/// </summary>
+		/// <returns>The size of the PARI stack.</returns>
+		/// <remarks>
+		/// Other PARI functions report sizes in terms of 32-bit words, but this one uses bytes.  Convert
+		/// before combining.
+		/// </remarks>
+		#endregion
 		[DllImport(DllName, EntryPoint = "getstack")]
 		public static extern int GetStackSize();
+		
+		[DllImport(DllName)]
+		private static extern IntPtr version(); //TODO: Determine whether this clutters the stack, then wrap.
+		
+		[DllImport(DllName)]
+		private static extern IntPtr gp_readvec_stream(IntPtr file);
 		
 		[DllImport(DllName)]
 		private static extern void pari_init(uint size, uint maxPrime);

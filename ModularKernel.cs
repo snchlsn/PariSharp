@@ -55,7 +55,7 @@ namespace PariSharp
 		/// <returns>(-<paramref name="x"/>)%<paramref name="m"/></returns>
 		#endregion
 		[DllImport(GP.DllName, EntryPoint = "Fl_neg")]
-		private static extern uint Negate(uint x, uint m);
+		public static extern uint Negate(uint x, uint m);
 		
 		#region Header
 		/// <summary>
@@ -67,7 +67,7 @@ namespace PariSharp
 		/// <returns>(<paramref name="x"/>-<paramref name="y"/>)%<paramref name="m"/></returns>
 		#endregion
 		[DllImport(GP.DllName, EntryPoint = "Fl_sub")]
-		private static extern uint Subtract(uint x, uint y, uint m);
+		public static extern uint Subtract(uint x, uint y, uint m);
 		
 		#region Header
 		//TODO: Wrap this.
@@ -83,53 +83,49 @@ namespace PariSharp
 		private static extern long Fl_center(uint x, uint m, uint mo2);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns the smallest positive representative of x*y modulo m.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
+		/// <param name="x">Left multiplicand.</param>
+		/// <param name="y">Right multiplicand.</param>
+		/// <param name="m">The modulus.</param>
+		/// <returns>(<paramref name="x"/>*<paramref name="y"/>)%<paramref name="m"/></returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_mul(uint x, uint y, uint m);
+		[DllImport(GP.DllName, EntryPoint = "Fl_mul")]
+		public static extern uint Multiply(uint x, uint y, uint m);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns 2x modulo m.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
+		/// <param name="x">The multiplicand.</param>
+		/// <param name="m">The modulus.</param>
+		/// <returns>(2<paramref name="x"/>)%<paramref name="m"/></returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_double(uint x, uint m);
+		[DllImport(GP.DllName, EntryPoint = "Fl_double")]
+		public static extern uint Double(uint x, uint m);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns 3x modulo m.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
+		/// <param name="x">The multiplicand.</param>
+		/// <param name="m">The modulus.</param>
+		/// <returns>(3<paramref name="x"/>)%<paramref name="m"/></returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_triple(uint x, uint m);
+		[DllImport(GP.DllName, EntryPoint = "Fl_triple")]
+		public static extern uint Triple(uint x, uint m);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns the smallest positive representative of x^2 modulo m.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
+		/// <param name="x">The number to be squared.</param>
+		/// <param name="m">The modulus.</param>
+		/// <returns><paramref name="x"/>^2%<paramref name="m"/></returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_sqr(uint x, uint m);
+		[DllImport(GP.DllName, EntryPoint = "Fl_sqr")]
+		public static extern uint Sqr(uint x, uint m);
 		
 		#region Header
 		//TODO: Wrap this.
@@ -169,17 +165,16 @@ namespace PariSharp
 		private static extern uint Fl_div(uint x, uint y, uint m);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns the smallest positive representative of x^n modulo m.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="n"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
+		/// <param name="x">The base.</param>
+		/// <param name="n">The exponent.</param>
+		/// <param name="m">The modulus.</param>
+		/// <returns><paramref name="x"/>^<paramref name="n"/>%<paramref name="m"/></returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_powu(uint x, uint n, uint m);
+		[DllImport(GP.DllName, EntryPoint = "Fl_powu")]
+		public static extern uint Pow(uint x, uint n, uint m);
 		
 		#region Header
 		//TODO: Wrap this.
@@ -207,15 +202,14 @@ namespace PariSharp
 		private static extern uint Fl_order(uint a, uint o, uint p);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
-		/// Returns a pseudo-random integer uniformly distributed in 0, 1, ... p-1.
+		/// Generates a pseudo-random number modulo a given <c>uint</c>.
 		/// </summary>
-		/// <param name="p"></param>
-		/// <returns></returns>
+		/// <param name="m">The modulus.</param>
+		/// <returns>A pseudo-random integer uniformly distributed in 0, 1, ... <paramref name="m"/>-1.</returns>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint random_Fl(uint p);
+		[DllImport(GP.DllName, EntryPoint = "random_Fl")]
+		public static extern uint Random(uint m);
 		
 		#region Header
 		//TODO: Wrap this.

@@ -13,6 +13,7 @@ namespace PariSharp
 		
 		internal readonly IntPtr Address;
 		
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			return 0x7FFFFFFF & hash_GEN(Address);
@@ -90,6 +91,22 @@ namespace PariSharp
 			}
 		}
 		
+		protected uint GetElement(int index)
+		{
+			unsafe
+			{
+				return *((uint*)(Address + (index << 2)).ToPointer());
+			}
+		}
+		
+		protected int GetElementSigned(int index)
+		{
+			unsafe
+			{
+				return *((int*)(Address + (index << 2)).ToPointer());
+			}
+		}
+		
 		/// <inheritdoc/>
 		public override string ToString()
 		{
@@ -146,12 +163,6 @@ namespace PariSharp
 		protected static extern IntPtr compo(IntPtr x, int n);
 		
 		[DllImport(GP.DllName)]
-		protected static extern IntPtr GENtostr(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		protected static extern IntPtr GENtoTeXstr(IntPtr x);
-		
-		[DllImport(GP.DllName)]
 		protected static extern int glength(IntPtr x);
 		
 		[DllImport(GP.DllName)]
@@ -160,11 +171,35 @@ namespace PariSharp
 		[DllImport(GP.DllName)]
 		protected static extern bool isonstack(IntPtr x);
 		
+		#region I/O functions
 		[DllImport(GP.DllName, CharSet = CharSet.Ansi, ThrowOnUnmappableChar = true)]
 		protected static extern void writebin(string filename, IntPtr x);
 		
 		[DllImport(GP.DllName)]
 		protected static extern void writebin(IntPtr file, IntPtr x);
+		#endregion
+		
+		#region Generic arithmetic functions
+		[DllImport(GP.DllName)]
+		protected static extern IntPtr gdiventres(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		protected static extern bool gdvd(IntPtr x, IntPtr y);
+		#endregion
+		
+		#region Generic conversion funtions
+		[DllImport(GP.DllName)]
+		protected static extern IntPtr GENtostr(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		protected static extern IntPtr GENtoTeXstr(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		protected static extern double gtodouble(IntPtr x); //TODO: Investigate overflow detection.
+		
+		[DllImport(GP.DllName)]
+		protected static extern int gtolong(IntPtr x);
+		#endregion
 		#endregion
 		
 		internal PariObject(IntPtr address)

@@ -39,6 +39,17 @@ namespace PariSharp
 		}
 		#endregion
 		
+		public int[] ToArray()
+		{
+			int count = Count;
+			int[] array = new int[count];
+			
+			for (int i = 0; i < count; ++i)
+				array[i] = this[i];
+			
+			return array;
+		}
+		
 		#region External PARI functions
 		#endregion
 		
