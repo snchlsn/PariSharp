@@ -130,18 +130,6 @@ namespace PariSharp
 		#region Header
 		//TODO: Wrap this.
 		/// <summary>
-		/// Returns the smallest positive representative of x^-1 modulo m.  If x is not invertible mod m, raise an exception.
-		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="m"></param>
-		/// <returns></returns>
-		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_inv(uint x, uint m);
-		
-		#region Header
-		//TODO: Wrap this.
-		/// <summary>
 		/// Returns the smallest positive representative of x^-1 modulo m.  If x is not invertible mod m, return 0 (which is ambiguous if m = 1).
 		/// </summary>
 		/// <param name="x"></param>
@@ -177,16 +165,18 @@ namespace PariSharp
 		public static extern uint Pow(uint x, uint n, uint m);
 		
 		#region Header
-		//TODO: Wrap this.
 		/// <summary>
 		/// Returns the square root of x modulo p (smallest positive representative).  Assumes p to be prime, and x to be a square modulo p.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="p"></param>
-		/// <returns></returns>
+		/// <param name="x">A square modulo <paramref name="p"/>.</param>
+		/// <param name="p">The modulus.  Must be prime.</param>
+		/// <returns>The square root of <paramref name="x"/> % <paramref name="p"/>.</returns>
+		/// <remarks>
+		/// No error checking is done.  If preconditios are not met, and invalid result will be returned.
+		/// </remarks>
 		#endregion
-		[DllImport(GP.DllName)]
-		private static extern uint Fl_sqrt(uint x, uint p); 
+		[DllImport(GP.DllName, EntryPoint = "Fl_sqrt")]
+		public static extern uint Sqrt(uint x, uint p); 
 		
 		#region Header
 		//TODO: Wrap this.

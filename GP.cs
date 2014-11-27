@@ -8,6 +8,15 @@ namespace PariSharp
 {
 	public static class GP
 	{
+		#region Header
+		/// <summary>
+		/// The file name of the PARI library.
+		/// </summary>
+		/// <remarks>
+		/// Never refer to libpari using a literal; always use this constant.  In the event that PariSharp
+		/// ever goes cross-platform, this will make the transition easier.
+		/// </remarks>
+		#endregion
 		internal const string DllName = "libpari.dll";
 		
 		#region Header
@@ -148,6 +157,8 @@ namespace PariSharp
 		}
 		
 		#region External PARI functions
+		//TODO: Import and wrap more flexible garbage collection functions.
+		
 		[DllImport(DllName)]
 		private static extern void cgiv(IntPtr z);
 		

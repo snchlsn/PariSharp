@@ -157,7 +157,7 @@ namespace PariSharp
 		}
 		
 		#region External PARI functions
-		//Do not import the general arithmetic functions (gadd, gmul, etc.), as they are not strictly type safe.
+		//Do not import gadd, gmul, etc., as they are not strictly type safe.
 		
 		[DllImport(GP.DllName)]
 		protected static extern IntPtr compo(IntPtr x, int n);
@@ -206,5 +206,7 @@ namespace PariSharp
 		{
 			Address = address;
 		}
+		
+		internal protected PariObject() {}
 	}
 }

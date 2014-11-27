@@ -16,8 +16,9 @@ namespace PariSharp
 	/// <para/>
 	/// All public methods that return <see cref="PariObject"/>s (including constructors and operators)
 	/// clutter GP's stack unless otherwise noted (that is, the value returned is a new object in unmanaged memory).
-	/// All methods that return primitive types are guaranteed not to clutter the stack, as are all property getters,
-	/// regardless of type.
+	/// Some methods that normally clutter the stack may instead return a constant value not on the stack if the
+	/// result is between -2 and 2, inclusive. All methods that return primitive types are guaranteed not to clutter
+	/// the stack, as are all property getters, regardless of type.
 	/// </remarks>
 	#endregion
 	public class PariInteger: PariObject, IEquatable<PariInteger>, IComparable<PariInteger>, IConvertible
@@ -70,8 +71,17 @@ namespace PariSharp
 		}
 		
 		#region IComparable implementation
+		#region Header
+		/// <inheritdoc/>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="other"/> is <c>null</c>.
+		/// </exception>
+		#endregion
 		public int CompareTo(PariInteger other)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			
 			return cmpii(Address, other.Address);
 		}
 		#endregion
@@ -258,12 +268,18 @@ namespace PariSharp
 		/// <inheritdoc/>
 		public bool Equals(PariInteger other)
 		{
+			if (other == null)
+				return false;
+			
 			return equalii(Address, other.Address);
 		}
 		
 		/// <inheritdoc/>
 		public override bool Equals(object other)
 		{
+			if (other == null)
+				return false;
+			
 			if (other is PariInteger)
 				return equalii(Address, ((PariObject)other).Address);
 			
@@ -587,6 +603,15 @@ namespace PariSharp
 			return;
 		}
 		
+		public static PariInteger Parse(string str)
+		{
+			if (str == null)
+				throw new ArgumentNullException("str");
+			
+			//TODO: Add validity checks.
+			return new PariInteger(strtoi(str));
+		}
+		
 		#region Header
 		/// <summary>
 		/// Computes a power of 2.
@@ -599,6 +624,22 @@ namespace PariSharp
 			return new PariInteger(int2u(pow));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Performs Euclidean integer divison and returns the positive remainder.
+		/// </summary>
+		/// <param name="dividend">The dividend.</param>
+		/// <param name="divisor">The divisor</param>
+		/// <returns>
+		/// The smallest positive representative of <paramref name="dividend"/> % <paramref name="divisor"/>.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="dividend"/> is <c>null</c> -or- <paramref name="divisor"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, PariInteger divisor)
 		{
 			if (dividend == null)
@@ -613,6 +654,22 @@ namespace PariSharp
 			return new PariInteger(modii(dividend.Address, divisor.Address));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Performs Euclidean integer divison and returns the positive remainder.
+		/// </summary>
+		/// <param name="dividend">The dividend.</param>
+		/// <param name="divisor">The divisor</param>
+		/// <returns>
+		/// The smallest positive representative of <paramref name="dividend"/> % <paramref name="divisor"/>.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="dividend"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, int divisor)
 		{
 			if (dividend == null)
@@ -624,6 +681,22 @@ namespace PariSharp
 			return new PariInteger(modis(dividend.Address, divisor));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Performs Euclidean integer divison and returns the positive remainder.
+		/// </summary>
+		/// <param name="dividend">The dividend.</param>
+		/// <param name="divisor">The divisor</param>
+		/// <returns>
+		/// The smallest positive representative of <paramref name="dividend"/> % <paramref name="divisor"/>.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="divisor"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
 		public static PariInteger TrueEuclideanRem(int dividend, PariInteger divisor)
 		{
 			if (divisor == null)
@@ -635,6 +708,22 @@ namespace PariSharp
 			return new PariInteger(modsi(dividend, divisor.Address));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Performs Euclidean integer divison and returns the positive remainder.
+		/// </summary>
+		/// <param name="dividend">The dividend.</param>
+		/// <param name="divisor">The divisor</param>
+		/// <returns>
+		/// The smallest positive representative of <paramref name="dividend"/> % <paramref name="divisor"/>.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="dividend"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, uint divisor)
 		{
 			if (dividend == null)
@@ -646,6 +735,22 @@ namespace PariSharp
 			return new PariInteger(modiu(dividend.Address, divisor));
 		}
 		
+		#region Header
+		/// <summary>
+		/// Performs Euclidean integer divison and returns the positive remainder.
+		/// </summary>
+		/// <param name="dividend">The dividend.</param>
+		/// <param name="divisor">The divisor</param>
+		/// <returns>
+		/// The smallest positive representative of <paramref name="dividend"/> % <paramref name="divisor"/>.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="divisor"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="System.DivideByZeroException">
+		/// <paramref name="divisor"/> is 0.
+		/// </exception>
+		#endregion
 		public static PariInteger TrueEuclideanRem(uint dividend, PariInteger divisor)
 		{
 			if (divisor == null)
@@ -696,7 +801,7 @@ namespace PariSharp
 		public bool AbsEquals(PariInteger other)
 		{
 			if (other == null)
-				throw new ArgumentNullException("other");
+				return false;;
 			
 			return absi_equal(Address, other.Address);
 		}
@@ -758,6 +863,28 @@ namespace PariSharp
 			return cmpiu(Address, other) <= 0;
 		}
 		#endregion
+		
+		#region Header
+		/// <summary>
+		/// Gets an upper bound for the number of digits in the decimal expansion.
+		/// </summary>
+		/// <returns>The approximate number of decimal digits.</returns>
+		/// <remarks>
+		/// This method is much more efficient than counting characters after converting to a <c>string</c>,
+		/// but is inexact.  The result may be off by 1.
+		/// <para/>
+		/// Analagous methods for bases other than 10 are not available. 
+		/// </remarks>
+		#endregion
+		public int DigitCount()
+		{
+			return sizedigit(Address);
+		}
+		
+		public Vector Digits(PariInteger b = null)
+		{
+			return new Vector(digits(Address, b == null ? IntPtr.Zero : b.Address));
+		}
 		
 		#region Header
 		/// <summary>
@@ -992,35 +1119,6 @@ namespace PariSharp
 		
 		#region Header
 		/// <summary>
-		/// Checks whether one t_INT divides another.
-		/// </summary>
-		/// <param name="x">The dividend, as a t_INT.</param>
-		/// <param name="y">The divisor, as a t_INT.</param>
-		/// <returns>
-		/// <c>true</c> if <paramref name="y"/> divides <paramref name="x"/>; <c>false</c> otherwise.
-		/// </returns>
-		/// <remarks>
-		/// This routine does still treat the case where <paramref name="y"/> is 0 as an error condition,
-		/// rather than returning <c>false</c>.
-		/// </remarks>
-		#endregion
-		[DllImport(GP.DllName)]
-		private static extern bool dvdii(IntPtr x, IntPtr y);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool dvdis(IntPtr x, int y);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool dvdiu(IntPtr x, uint y);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool dvdsi(int x, IntPtr y);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool dvdui(uint x, IntPtr y);
-		
-		#region Header
-		/// <summary>
 		/// Computes the true Euclidean remainder in [0, <paramref name="divisor"/>).
 		/// </summary>
 		/// <param name="x">The dividend.</param>
@@ -1122,6 +1220,109 @@ namespace PariSharp
 		
 		[DllImport(GP.DllName)]
 		private static extern IntPtr subui(uint x, IntPtr y);
+		
+		#region Factorization functions
+		[DllImport(GP.DllName)]
+		private static extern IntPtr boundfact(IntPtr x, uint lim);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr divisors(IntPtr x);
+		
+		#region Header
+		/// <summary>
+		/// Checks whether one t_INT divides another.
+		/// </summary>
+		/// <param name="x">The dividend, as a t_INT.</param>
+		/// <param name="y">The divisor, as a t_INT.</param>
+		/// <returns>
+		/// <c>true</c> if <paramref name="y"/> divides <paramref name="x"/>; <c>false</c> otherwise.
+		/// </returns>
+		/// <remarks>
+		/// This routine does still treat the case where <paramref name="y"/> is 0 as an error condition,
+		/// rather than returning <c>false</c>.
+		/// </remarks>
+		#endregion
+		[DllImport(GP.DllName)]
+		private static extern bool dvdii(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdis(IntPtr x, int y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdiu(IntPtr x, uint y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdsi(int x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool dvdui(uint x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr factor(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool istotient(IntPtr x, IntPtr n);
+		
+		#region Header
+		/// <summary>
+		/// Gets the number of distinct prime divisors of an integer.
+		/// </summary>
+		/// <param name="x">A t_INT.</param>
+		/// <returns>The number of prime divisors of <paramref name="x"/>.</returns>
+		#endregion
+		[DllImport(GP.DllName)]
+		private static extern int omega(IntPtr x);
+		#endregion
+		#endregion
+		
+		#region Logical functions
+		[DllImport(GP.DllName)]
+		private static extern IntPtr gbitand(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr gbitneg(IntPtr x, int n);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr gbitor(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr gbitxor(IntPtr x, IntPtr y);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr hammingweight(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr int2u(uint n);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool mpodd(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod2(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod4(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod8(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod16(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod32(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod64(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern uint mod2BIL(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr shifti(IntPtr x, int n);
+		
+		[DllImport(GP.DllName)]
+		private static extern int vali(IntPtr x);
 		#endregion
 		
 		#region Comparison functions
@@ -1143,10 +1344,10 @@ namespace PariSharp
 		private static extern int cmpii(IntPtr x, IntPtr y);
 		
 		[DllImport(GP.DllName)]
-		private static extern int cmpsi(int x, IntPtr y);
+		private static extern int cmpiu(IntPtr x, uint y);
 		
 		[DllImport(GP.DllName)]
-		private static extern int cmpiu(IntPtr x, uint y);
+		private static extern int cmpsi(int x, IntPtr y);
 		
 		#region Header
 		/// <summary>
@@ -1218,80 +1419,6 @@ namespace PariSharp
 		private static extern IntPtr mkintn(int n, params uint[] a);
 		#endregion
 		
-		#region Logical functions
-		[DllImport(GP.DllName)]
-		private static extern IntPtr gbitand(IntPtr x, IntPtr y);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr gbitneg(IntPtr x, int n);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr gbitor(IntPtr x, IntPtr y);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr gbitxor(IntPtr x, IntPtr y);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr hammingweight(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr int2u(uint n);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool mpodd(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod2(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod4(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod8(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod16(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod32(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod64(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern uint mod2BIL(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr shifti(IntPtr x, int n);
-		
-		[DllImport(GP.DllName)]
-		private static extern int vali(IntPtr x);
-		#endregion
-		
-		#region Factorization functions
-		[DllImport(GP.DllName)]
-		private static extern IntPtr boundfact(IntPtr x, uint lim);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr divisors(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern IntPtr factor(IntPtr x);
-		
-		[DllImport(GP.DllName)]
-		private static extern bool istotient(IntPtr x, IntPtr n);
-		
-		#region Header
-		/// <summary>
-		/// Gets the number of distinct prime divisors of an integer.
-		/// </summary>
-		/// <param name="x">A t_INT.</param>
-		/// <returns>The number of prime divisors of <paramref name="x"/>.</returns>
-		#endregion
-		[DllImport(GP.DllName)]
-		private static extern int omega(IntPtr x);
-		#endregion
-		
 		#region Conversion functions
 		[DllImport(GP.DllName)]
 		private static extern IntPtr digits(IntPtr x, IntPtr b);
@@ -1336,7 +1463,13 @@ namespace PariSharp
 		private static extern uint itou_or_0(IntPtr x);
 		
 		[DllImport(GP.DllName)]
+		private static extern int sizedigit(IntPtr x);
+		
+		[DllImport(GP.DllName)]
 		private static extern IntPtr stoi(int s);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr strtoi(string s);
 		
 		[DllImport(GP.DllName)]
 		private static extern IntPtr utoi(uint s);
@@ -1413,6 +1546,8 @@ namespace PariSharp
 		public PariInteger(uint upper, uint lower, bool neg = false): base(neg ? uutoineg(upper, lower) : uutoi(upper, lower)) {}
 		
 		public PariInteger(params uint[] a): base(mkintn(a.Length, a)) {}
+		
+		public PariInteger(ulong num, bool neg = false): base(neg ? uutoineg((uint)(num >> 32), (uint)(num & uint.MaxValue)) : uutoi((uint)(num >> 32), (uint)(num & uint.MaxValue))) {}
 		
 		#region Header
 		/// <summary>
