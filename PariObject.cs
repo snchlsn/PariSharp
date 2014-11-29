@@ -8,8 +8,8 @@ namespace PariSharp
 {
 	public class PariObject
 	{
-		protected const uint TypeMask = (uint)((1 << 7) - 1);
-		protected const uint LengthMask = (uint)(~((uint)(1 << 25) - 1));
+		protected const byte TypeShift = 25;
+		protected const uint LengthMask = (uint)(1 << 24) - 1;
 		
 		internal readonly IntPtr Address;
 		
@@ -86,7 +86,7 @@ namespace PariSharp
 			{
 				unsafe
 				{
-					return (PariType)(*((uint*)Address.ToPointer()) & TypeMask);
+					return (PariType)(*((uint*)Address.ToPointer()) >> TypeShift);
 				}
 			}
 		}

@@ -54,6 +54,7 @@ namespace PariSharp
 		}
 		#endregion
 		
+		#region Properties
 		/// <inheritdoc/>
 		public override PariType Type
 		{
@@ -69,6 +70,7 @@ namespace PariSharp
 		{
 			get { return (sbyte)(GetElementSigned(1) >> signShift); }
 		}
+		#endregion
 		
 		#region IComparable implementation
 		#region Header
@@ -593,7 +595,7 @@ namespace PariSharp
 			return new PariInteger(mpfact(x));
 		}
 		
-		public static void InitializeConstants()
+		internal static void InitializeConstants()
 		{
 			zero = new PariInteger(0);
 			one = Pow2(0);

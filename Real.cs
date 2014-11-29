@@ -19,17 +19,24 @@ namespace PariSharp
 	/// <para/>
 	/// Due to rounding error and the arbitrarily precise implementation, this class should be considered to
 	/// represent a range of real numbers, rather than a single real number.
+	/// <para/>
+	/// Constructors and methods that return <c>Real</c>s will often take a parameter called <c>prec</c>.  This
+	/// parameter specifies the precision of the returned <c>Real</c>.  It is given as the length in 32-bit words,
+	/// not of the mantissa, but of the whole <c>Real</c>, including two codewords.  The minimum value is consequently
+	/// always 3.
 	/// </remarks>
 	#endregion
 	public class Real: PariObject, IComparable<Real>, IEquatable<Real>
 	{
 		private const string precOutOfRangeMsg = "prec must be at least 3";
 		
+		#region Properties
 		/// <inheritdoc/>
 		public override PariType Type
 		{
 			get { return PariType.Real; }
 		}
+		#endregion
 		
 		#region IComparable implementation
 		#region Header
@@ -212,6 +219,16 @@ namespace PariSharp
 		public static Real operator /(uint x, Real y)
 		{
 			return new Real(divur(x, y.Address));
+		}
+		
+		public static Real operator <<(Real x, int amt)
+		{
+			return new Real(shiftr(x.Address, amt));
+		}
+		
+		public static Real operator >>(Real x, int amt)
+		{
+			return new Real(shiftr(x.Address, -amt));
 		}
 		
 		public static bool operator ==(Real x, Real y)
@@ -587,8 +604,28 @@ namespace PariSharp
 		#endregion
 		
 		#region Constructors
+		#region Header
+		/// <summary>
+		/// Creates a <c>Real</c> from an <c>int</c>.
+		/// </summary>
+		/// <param name="num">The value to be represented by the new <c>Real</c>.</param>
+		/// <param name="prec">
+		/// The precision of the new <c>Real</c>.  The minimum value is 3, but no exception will be thrown if a lower
+		/// value is passed.  Any lower value will be silently treated as if it were 3.
+		/// </param>
+		#endregion
 		public Real(int num, int prec): base(stor(num, prec >= 3 ? prec : 3)) {}
 		
+		#region Header
+		/// <summary>
+		/// Creates a <c>Real</c> from a <c>uint</c>.
+		/// </summary>
+		/// <param name="num">The value to be represented by the new <c>Real</c>.</param>
+		/// <param name="prec">
+		/// The precision of the new <c>Real</c>.  The minimum value is 3, but no exception will be thrown if a lower
+		/// value is passed.  Any lower value will be silently treated as if it were 3.
+		/// </param>
+		#endregion
 		public Real(uint num, int prec): base(utor(num, prec >= 3 ? prec : 3)) {}
 		
 		#region Header

@@ -8,6 +8,7 @@ namespace PariSharp
 {
 	public static class GP
 	{
+		#region Constants
 		#region Header
 		/// <summary>
 		/// The file name of the PARI library.
@@ -25,6 +26,7 @@ namespace PariSharp
 		/// </summary>
 		#endregion
 		internal const byte SizeOfForPrimeT = 26 * sizeof(uint);
+		#endregion
 		
 		private static IntPtr stackTop;
 		
