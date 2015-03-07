@@ -7,35 +7,37 @@ using System.Runtime.InteropServices;
 
 namespace PariSharp
 {
-	public sealed partial class PrimeSieve
+	public partial class PrimeSieve
 	{
-		public sealed class Enumerator: IEnumerator<uint>
+		public sealed class Enumerator: IEnumerator<PariInteger>
 		{
-			private uint current;
+			private PariInteger current;
 			private IntPtr t = Marshal.AllocCoTaskMem(GP.SizeOfForPrimeT);
 			
 			#region IEnumerator implementation
-			/// <inheritdoc />
-			public uint Current
+			/// <inheritdoc/>
+			public PariInteger Current
 			{
 				get { return current; }
 			}
 			
+			/// <inheritdoc/>
 			object IEnumerator.Current
 			{
 				get { return current; }
 			}
 			
+			/// <inheritdoc/>
 			public void Dispose()
 			{
 				Marshal.FreeCoTaskMem(t);
 				return;
 			}
 			
-			/// <inheritdoc />
+			/// <inheritdoc/>
 			public bool MoveNext()
 			{
-				return (current = u_forprime_next(t)) != 0;
+				return (current = new PariInteger(forprime_next(t))).Size > 2;
 			}
 			
 			#region Header
@@ -50,36 +52,16 @@ namespace PariSharp
 			#endregion
 			
 			#region External PARI functions
-			#region Header
-			/// <summary>
-			///  Initializes the prime iterator on the PARI stack.
-			/// </summary>
-			/// <param name="t">
-			/// PARI expects a pointer to an unitialized forprime_t struct, here represented as a
-			/// <c>uint</c> array.  The expected size of the array is given as <c>PariSharp.GP.SizeOfForPrimeT</c>.
-			/// The array used should not be modified in wrapper code after this function has been called.
-			/// </param>
-			/// <param name="a">The lower bound for iteration.</param>
-			/// <param name="b">The upper bound for iteration.</param>
-			/// <returns><c>1</c> on success; <c>0</c> if <paramref name="a"/> > <paramref name="b"/>.</returns>
-			#endregion
 			[DllImport(GP.DllName)]
-			private static extern int u_forprime_init(IntPtr t, uint a, uint b);
+			private static extern int forprime_init(IntPtr t, IntPtr a, IntPtr b);
 			
-			#region Header
-			/// <summary>
-			/// Advances the iterator and returns the next prime.
-			/// </summary>
-			/// <param name="t">The same array passed to <c>u_forprime_init</c>.</param>
-			/// <returns>The next prime in range, or <c>0</c> if there are no more primes.</returns>
-			#endregion
 			[DllImport(GP.DllName)]
-			private static extern uint u_forprime_next(IntPtr t);
+			private static extern IntPtr forprime_next(IntPtr t);
 			#endregion
 			
-			public Enumerator(uint start = 2, uint end = uint.MaxValue)
+			public Enumerator(PariInteger start, PariInteger end)
 			{
-				if (u_forprime_init(t, start, end) == 0)
+				if (forprime_init(t, start.Address, end.Address) < 1)
 					throw new ArgumentException("end cannot be less than start", "end");
 			}
 		}

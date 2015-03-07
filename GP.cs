@@ -26,6 +26,8 @@ namespace PariSharp
 		/// </summary>
 		#endregion
 		internal const byte SizeOfForPrimeT = 26 * sizeof(uint);
+		
+		internal const byte SizeOfForCompositeT = SizeOfForPrimeT + 4 * sizeof(uint);
 		#endregion
 		
 		private static IntPtr stackTop;
@@ -89,8 +91,9 @@ namespace PariSharp
 		/// </param>
 		/// <remarks>
 		/// Important: In general, you must call this method before calling any other method in the PariSharp
-		/// namespace.  Methods that take and return only primitive types may still work if you don't, but they
-		/// may also internally use the stack or the prime table.  Behavior of other methods is undefined when not
+		/// namespace.  The very few methods that do not make calls to the PARI library will always work.
+		/// Methods that take and return only primitive types may still work without initialization, but they
+		/// may also internally use the stack or the prime table.  Other methods are sure to throw an exception when not
 		/// called after this method.
 		/// </remarks>
 		#endregion

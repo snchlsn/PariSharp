@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 #endregion
 
@@ -10,74 +11,198 @@ namespace PariSharp
 	#region Header
 	/// <summary>
 	/// Provides an enumerable interface to PARI's forprime functionality, allowing the use of
-	/// <c>foreach</c> loops.
+	/// <c>foreach</c> loops, as well as wrapping other operations on arbitrarily large primes and psedoprimes.
 	/// </summary>
-	/// <remarks>
-	/// This class is efficient in computation and does not clutter GP's stack, but is limited to primes not exceeding
-	/// <c>uint.MaxValue</c>.  For larger primes, use <c>BigPrimeSieve</c> instead.
-	/// </remarks>
+	/// <seealso cref="SmallPrimeSieve"/>
 	#endregion
-	public partial class PrimeSieve: IEnumerable<uint>
+	public sealed partial class PrimeSieve: IEnumerable<PariInteger>
 	{
-		public readonly uint Start;
-		public readonly uint End;
-		
-		public static uint MaxPrime
-		{
-			get { return maxprime(); }
-		}
-		
-		public static uint NextPrime(uint num)
-		{
-			uint result = TryNextPrime(num);
-			
-			if (result == 0)
-				throw new OverflowException();
-			
-			return result;
-		}
-		
-		public static uint PrecedingPrime(uint num)
-		{
-			if (num <= 1)
-				throw new ArgumentOutOfRangeException("num", num, "num cannot be less than 2");
-			
-			return TryPrecedingPrime(num);
-		}
+		public readonly PariInteger Start;
+		public readonly PariInteger End;
 		
 		#region IEnumerable implementation
-		public IEnumerator<uint> GetEnumerator()
+		/// <inheritdoc/>
+		public IEnumerator<PariInteger> GetEnumerator()
 		{
 			return new Enumerator(Start, End);
 		}
 		
+		/// <inheritdoc/>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
 		}
 		#endregion
 		
-		#region External PARI functions
-		[DllImport(GP.DllName, EntryPoint = "initprimetable")]
-		public static extern void Initialize(uint max = 0);
+		public static bool IsPrime(PariInteger num)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			return isprime(num.Address);
+		}
 		
-		[DllImport(GP.DllName, EntryPoint = "uisprime")]
-		public static extern bool IsPrime(uint num);
+		public static bool IsPrime(PariInteger num, PrimalityTest flag)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			if (!Enum.IsDefined(typeof(PrimalityTest), flag))
+				throw new InvalidEnumArgumentException("flag", (int)flag, typeof(PrimalityTest));
+			
+			//TODO: Adjust return value for the flag == 1 case.
+			return gisprime(num.Address, (int)flag) > 0;
+		}
+		
+		public static bool IsPseudoprime(PariInteger num, int mrBases = 0)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			if (mrBases < 0)
+				mrBases = 0;
+			
+			return gispseudoprime(num.Address, mrBases);
+		}
+		
+		public static bool IsPseudoprimeBPSW(PariInteger num)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			return BPSW_psp(num.Address);
+		}
+		
+		public static bool IsPseudoprimeMR(PariInteger num, int bases)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			if (bases <= 0)
+				throw new ArgumentOutOfRangeException("bases", bases, "Must use at least one base.");
+			
+			return millerrabin(num.Address, bases);
+		}
+		
+		#region Header
+		/// <summary>
+		/// Computes the nth term in the ordered sequence of prime numbers.
+		/// </summary>
+		/// <param name="n">The one-based index of the prime number to compute.</param>
+		/// <returns>The <paramref name="n"/>th prime.</returns>
+		/// <remarks>This method uses an inefficient O(n) algorithm.</remarks>
+		/// <exception cref="System.ArgumentOutOfRangeException">
+		/// <paramref name="n"/> is less than 1.
+		/// </exception>
+		#endregion
+		public static PariInteger NthPrime(int n)
+		{
+			if (n <= 0)
+				throw new ArgumentOutOfRangeException("n", n, "n must be natural.");
+			
+			return new PariInteger(prime(n));
+		}
+		
+		#region Header
+		/// <summary>
+		/// Finds the first pseudoprime no smaller than a given value.
+		/// </summary>
+		/// <param name="num">The lower bound on the search for a pseudoprime.</param>
+		/// <returns>
+		/// The smallest pseudoprime greater than or equal to <paramref name="num"/>.
+		/// </returns>
+		/// <remarks>
+		/// If <paramref name="num"/> itself is pseudoprime, a copy of <paramref name="num"/> is returned.
+		/// </remarks>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="num"/> is <c>null</c>.
+		/// </exception>
+		#endregion
+		public static PariInteger NextPseudoprime(PariInteger num)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			return new PariInteger(nextprime(num.Address));
+		}
+		
+		#region Header
+		/// <summary>
+		/// Finds the last pseudoprime no greater than a given value.
+		/// </summary>
+		/// <param name="num">The upper bound on the search for a pseudoprime.</param>
+		/// <returns>
+		/// The largest pseudoprime less than or equal to <paramref name="num"/>.
+		/// </returns>
+		/// <remarks>
+		/// If <paramref name="num"/> itself is pseudoprime, a copy of <paramref name="num"/> is returned.
+		/// </remarks>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="num"/> is <c>null</c>.
+		/// </exception>
+		#endregion
+		public static PariInteger PrecedingPseudoprime(PariInteger num)
+		{
+			if (object.ReferenceEquals(num, null))
+				throw new ArgumentNullException("num");
+			
+			return new PariInteger(precprime(num.Address));
+		}
+		
+		#region External PARI functions
+		[DllImport(GP.DllName)]
+		private static extern bool BPSW_isprime(IntPtr x);
 		
 		[DllImport(GP.DllName)]
-		private static extern uint maxprime();
+		private static extern bool BPSW_psp(IntPtr x);
 		
-		[DllImport(GP.DllName, EntryPoint = "unextprime")]
-		public static extern uint TryNextPrime(uint num);
+		[DllImport(GP.DllName)]
+		private static extern uint gisprime(IntPtr x, int flag);
 		
-		[DllImport(GP.DllName, EntryPoint = "uprecprime")]
-		public static extern uint TryPrecedingPrime(uint num);
+		[DllImport(GP.DllName)]
+		private static extern bool gispseudoprime(IntPtr x, int flag);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool isprime(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool isprimeAPRCL(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern bool millerrabin(IntPtr x, int flag);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr nextprime(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr precprime(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr prime(int n);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr primepi(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr primes0(IntPtr x);
 		#endregion
 		
-		public PrimeSieve(uint start = 2, uint end = uint.MaxValue)
+		public PrimeSieve(PariInteger end)
 		{
-			if (end < start)
-				throw new ArgumentException("end cannot be less than start", "end");
+			if (object.ReferenceEquals(end, null))
+				throw new ArgumentNullException("end");
+			
+			Start = PariInteger.Two;
+			End = end;
+		}
+		
+		public PrimeSieve(PariInteger start, PariInteger end)
+		{
+			if (object.ReferenceEquals(start, null))
+				throw new ArgumentNullException("start");
+			
+			if (object.ReferenceEquals(end, null))
+				throw new ArgumentNullException("end");
 			
 			Start = start;
 			End = end;

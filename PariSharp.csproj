@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProjectGuid>{A3579F60-275B-46F8-B398-DDBF24FEA1CB}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
     <RootNamespace>PariSharp</RootNamespace>
     <AssemblyName>PariSharp</AssemblyName>
@@ -16,7 +16,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
     <PlatformTarget>x86</PlatformTarget>
     <BaseAddress>4194304</BaseAddress>
     <RegisterForComInterop>False</RegisterForComInterop>
@@ -49,10 +49,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Arithmetic.cs" />
-    <Compile Include="BigPrimeEnumerator.cs">
-      <DependentUpon>BigPrimeSieve.cs</DependentUpon>
+    <Compile Include="CompositeEnumerator.cs">
+      <DependentUpon>CompositeSieve.cs</DependentUpon>
     </Compile>
-    <Compile Include="BigPrimeSieve.cs" />
+    <Compile Include="CompositeSieve.cs" />
+    <Compile Include="PrimeEnumerator.cs">
+      <DependentUpon>PrimeSieve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PrimeSieve.cs" />
     <Compile Include="Column.cs" />
     <Compile Include="FactorOptions.cs" />
     <Compile Include="Fraction.cs" />
@@ -70,11 +74,15 @@
     <Compile Include="PariObject.cs" />
     <Compile Include="PariType.cs" />
     <Compile Include="PrimalityTest.cs" />
-    <Compile Include="PrimeEnumerator.cs">
-      <DependentUpon>PrimeSieve.cs</DependentUpon>
+    <Compile Include="SmallCompositeEnumerator.cs">
+      <DependentUpon>SmallCompositeSieve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SmallCompositeSieve.cs" />
+    <Compile Include="SmallPrimeEnumerator.cs">
+      <DependentUpon>SmallPrimeSieve.cs</DependentUpon>
     </Compile>
     <Compile Include="GP.cs" />
-    <Compile Include="PrimeSieve.cs" />
+    <Compile Include="SmallPrimeSieve.cs" />
     <Compile Include="PrimeSieveTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Real.cs" />

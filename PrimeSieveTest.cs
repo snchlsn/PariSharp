@@ -10,8 +10,8 @@ namespace PariSharp
 		[Test]
 		public void TestLowPrimes()
 		{
-			PrimeSieve sieve = new PrimeSieve(2, 7);
-			PrimeSieve.Enumerator enumerator = (PrimeSieve.Enumerator)sieve.GetEnumerator();
+			SmallPrimeSieve sieve = new SmallPrimeSieve(2, 7);
+			SmallPrimeSieve.Enumerator enumerator = (SmallPrimeSieve.Enumerator)sieve.GetEnumerator();
 			
 			Assert.IsTrue(enumerator.MoveNext());
 			Assert.AreEqual(2, enumerator.Current);

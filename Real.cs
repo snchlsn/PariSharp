@@ -28,7 +28,7 @@ namespace PariSharp
 	#endregion
 	public class Real: PariObject, IComparable<Real>, IEquatable<Real>
 	{
-		private const string precOutOfRangeMsg = "prec must be at least 3";
+		private const string precOutOfRangeMsg = "prec must be at least 3.";
 		
 		#region Properties
 		/// <inheritdoc/>
@@ -47,7 +47,7 @@ namespace PariSharp
 		#endregion
 		public int CompareTo(Real other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				throw new ArgumentNullException("other");
 			
 			return cmprr(Address, other.Address);
@@ -58,7 +58,7 @@ namespace PariSharp
 		/// <inheritdoc/>
 		public bool Equals(Real other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				return false;
 			
 			return equalrr(Address, other.Address);
@@ -67,7 +67,7 @@ namespace PariSharp
 		/// <inheritdoc/>
 		public override bool Equals(object other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				return false;
 			
 			if (other is Real)
@@ -233,36 +233,61 @@ namespace PariSharp
 		
 		public static bool operator ==(Real x, Real y)
 		{
+			if (object.ReferenceEquals(x, y))
+				return true;
+			if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null))
+				return false;
+			
 			return equalrr(x.Address, y.Address);
 		}
 		
 		public static bool operator ==(Real x, int y)
 		{
+			if (object.ReferenceEquals(x, null))
+				return false;
+			
 			return equalsr(y, x.Address);
 		}
 		
 		public static bool operator ==(int x, Real y)
 		{
+			if (object.ReferenceEquals(y, null))
+				return false;
+			
 			return equalsr(x, y.Address);
 		}
 		
 		public static bool operator !=(Real x, Real y)
 		{
+			if (object.ReferenceEquals(x, y))
+				return false;
+			if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null))
+				return true;
+			
 			return !equalrr(x.Address, y.Address);
 		}
 		
 		public static bool operator !=(Real x, int y)
 		{
+			if (object.ReferenceEquals(x, null))
+				return true;
+			
 			return !equalsr(y, x.Address);
 		}
 		
 		public static bool operator !=(int x, Real y)
 		{
+			if (object.ReferenceEquals(y, null))
+				return true;
+			
 			return !equalsr(x, y.Address);
 		}
 		
 		public static bool operator <(Real x, Real y)
 		{
+			if (x.Address == y.Address)
+				return false;
+			
 			return cmprr(x.Address, y.Address) < 0;
 		}
 		
@@ -278,6 +303,9 @@ namespace PariSharp
 		
 		public static bool operator <=(Real x, Real y)
 		{
+			if (x.Address == y.Address)
+				return true;
+			
 			return cmprr(x.Address, y.Address) <= 0;
 		}
 		
@@ -293,6 +321,9 @@ namespace PariSharp
 		
 		public static bool operator >(Real x, Real y)
 		{
+			if (x.Address == y.Address)
+				return false;
+			
 			return cmprr(x.Address, y.Address) > 0;
 		}
 		
@@ -308,6 +339,9 @@ namespace PariSharp
 		
 		public static bool operator >=(Real x, Real y)
 		{
+			if (x.Address == y.Address)
+				return true;
+			
 			return cmprr(x.Address, y.Address) >= 0;
 		}
 		

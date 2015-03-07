@@ -81,7 +81,7 @@ namespace PariSharp
 		#endregion
 		public int CompareTo(PariInteger other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				throw new ArgumentNullException("other");
 			
 			return cmpii(Address, other.Address);
@@ -270,7 +270,7 @@ namespace PariSharp
 		/// <inheritdoc/>
 		public bool Equals(PariInteger other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				return false;
 			
 			return equalii(Address, other.Address);
@@ -279,7 +279,7 @@ namespace PariSharp
 		/// <inheritdoc/>
 		public override bool Equals(object other)
 		{
-			if (other == null)
+			if (object.ReferenceEquals(other, null))
 				return false;
 			
 			if (other is PariInteger)
@@ -478,36 +478,61 @@ namespace PariSharp
 		
 		public static bool operator ==(PariInteger x, PariInteger y)
 		{
+			if (object.ReferenceEquals(x, y))
+				return true;
+			if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null))
+				return false;
+			
 			return equalii(x.Address, y.Address);
 		}
 		
 		public static bool operator ==(PariInteger x, int y)
 		{
+			if (object.ReferenceEquals(x, null))
+				return false;
+			
 			return equalsi(y, x.Address);
 		}
 		
 		public static bool operator ==(int x, PariInteger y)
 		{
+			if (object.ReferenceEquals(y, null))
+				return false;
+			
 			return equalsi(x, y.Address);
 		}
 		
 		public static bool operator !=(PariInteger x, PariInteger y)
 		{
+			if (object.ReferenceEquals(x, y))
+				return false;
+			if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null))
+				return true;
+			
 			return equalii(x.Address, y.Address);
 		}
 		
 		public static bool operator !=(PariInteger x, int y)
 		{
+			if (object.ReferenceEquals(x, null))
+				return true;
+			
 			return equalsi(y, x.Address);
 		}
 		
 		public static bool operator !=(int x, PariInteger y)
 		{
+			if (object.ReferenceEquals(y, null))
+				return true;
+			
 			return equalsi(x, y.Address);
 		}
 		
 		public static bool operator >(PariInteger x, PariInteger y)
 		{
+			if (x.Address == y.Address)
+				return false;
+			
 			return cmpii(x.Address, y.Address) > 0;
 		}
 		
@@ -523,6 +548,9 @@ namespace PariSharp
 		
 		public static bool operator <(PariInteger x, PariInteger y)
 		{
+			if (x.Address == y.Address)
+				return false;
+			
 			return cmpii(x.Address, y.Address) < 0;
 		}
 		
@@ -538,6 +566,9 @@ namespace PariSharp
 		
 		public static bool operator >=(PariInteger x, PariInteger y)
 		{
+			if (x.Address == y.Address)
+				return true;
+			
 			return cmpii(x.Address, y.Address) >= 0;
 		}
 		
@@ -553,6 +584,9 @@ namespace PariSharp
 		
 		public static bool operator <=(PariInteger x, PariInteger y)
 		{
+			if (x.Address == y.Address)
+				return true;
+			
 			return cmpii(x.Address, y.Address) <= 0;
 		}
 		
@@ -607,7 +641,7 @@ namespace PariSharp
 		
 		public static PariInteger Parse(string str)
 		{
-			if (str == null)
+			if (object.ReferenceEquals(str, null))
 				throw new ArgumentNullException("str");
 			
 			//TODO: Add validity checks.
@@ -644,10 +678,10 @@ namespace PariSharp
 		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, PariInteger divisor)
 		{
-			if (dividend == null)
+			if (object.ReferenceEquals(dividend, null))
 				throw new ArgumentNullException("dividend");
 			
-			if (divisor == null)
+			if (object.ReferenceEquals(divisor, null))
 				throw new ArgumentNullException("divisor");
 			
 			if (divisor.Length == 0)
@@ -674,7 +708,7 @@ namespace PariSharp
 		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, int divisor)
 		{
-			if (dividend == null)
+			if (object.ReferenceEquals(dividend, null))
 				throw new ArgumentNullException("dividend");
 			
 			if (divisor == 0)
@@ -701,7 +735,7 @@ namespace PariSharp
 		#endregion
 		public static PariInteger TrueEuclideanRem(int dividend, PariInteger divisor)
 		{
-			if (divisor == null)
+			if (object.ReferenceEquals(divisor, null))
 				throw new ArgumentNullException("divisor");
 			
 			if (divisor.Length == 0)
@@ -728,7 +762,7 @@ namespace PariSharp
 		#endregion
 		public static PariInteger TrueEuclideanRem(PariInteger dividend, uint divisor)
 		{
-			if (dividend == null)
+			if (object.ReferenceEquals(dividend, null))
 				throw new ArgumentNullException("dividend");
 			
 			if (divisor == 0)
@@ -755,7 +789,7 @@ namespace PariSharp
 		#endregion
 		public static PariInteger TrueEuclideanRem(uint dividend, PariInteger divisor)
 		{
-			if (divisor == null)
+			if (object.ReferenceEquals(divisor, null))
 				throw new ArgumentNullException("divisor");
 			
 			if (divisor.Length == 0)
@@ -885,7 +919,7 @@ namespace PariSharp
 		
 		public Vector Digits(PariInteger b = null)
 		{
-			return new Vector(digits(Address, b == null ? IntPtr.Zero : b.Address));
+			return new Vector(digits(Address, object.ReferenceEquals(b, null) ? IntPtr.Zero : b.Address));
 		}
 		
 		#region Header
@@ -908,7 +942,7 @@ namespace PariSharp
 		#endregion
 		public PariInteger DivExact(PariInteger divisor)
 		{
-			if (divisor == null)
+			if (object.ReferenceEquals(divisor, null))
 				throw new ArgumentNullException("divisor");
 			
 			if (divisor.Length == 0)
@@ -956,7 +990,7 @@ namespace PariSharp
 		#endregion
 		public PariInteger DivRound(PariInteger divisor)
 		{
-			if (divisor == null)
+			if (object.ReferenceEquals(divisor, null))
 				throw new ArgumentNullException("divisor");
 			
 			if (divisor.Length == 0)
@@ -1060,6 +1094,16 @@ namespace PariSharp
 		public PariInteger Sqr()
 		{
 			return new PariInteger(sqri(Address));
+		}
+		
+		public PariInteger SumDivisors()
+		{
+			return new PariInteger(sumdiv(Address));
+		}
+		
+		public PariObject SumDivisorsPow(int k)
+		{
+			return new PariObject(sumdivk(Address, k));
 		}
 		
 		#region External PARI functions
@@ -1274,6 +1318,12 @@ namespace PariSharp
 		#endregion
 		[DllImport(GP.DllName)]
 		private static extern int omega(IntPtr x);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr sumdiv(IntPtr n);
+		
+		[DllImport(GP.DllName)]
+		private static extern IntPtr sumdivk(IntPtr n, int k);
 		#endregion
 		#endregion
 		

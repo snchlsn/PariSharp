@@ -128,6 +128,9 @@ namespace PariSharp
 		
 		public void WriteBinary(string fileName)
 		{
+			if (object.ReferenceEquals(fileName, null))
+				throw new ArgumentNullException("fileName");
+			
 			using (FileStream stream = new FileInfo(fileName).Open(FileMode.Append))
 			{
 				writebin(stream.SafeFileHandle.DangerousGetHandle(), Address);
@@ -137,6 +140,9 @@ namespace PariSharp
 		
 		public void WriteBinary(FileInfo file)
 		{
+			if (object.ReferenceEquals(file, null))
+				throw new ArgumentNullException("file");
+			
 			using (FileStream stream = file.Open(FileMode.Append))
 			{
 				writebin(stream.SafeFileHandle.DangerousGetHandle(), Address);
@@ -146,7 +152,7 @@ namespace PariSharp
 		
 		public void WriteBinary(FileStream stream)
 		{
-			if (stream == null)
+			if (object.ReferenceEquals(stream, null))
 				throw new ArgumentNullException("stream");
 			
 			if (stream.SafeFileHandle.IsClosed)

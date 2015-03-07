@@ -22,6 +22,35 @@ namespace PariSharp
 	#endregion
 	public static class ModularKernel
 	{
+		public static uint Pow(uint x, ulong n, uint m)
+		{
+			//The following is a direct translation of PARI's Fl_pow function.
+			if (n <= 2)
+			{ // frequent special cases
+				if (n == 2)
+					return Sqr(x, m);
+				if (n == 1)
+					return x;
+				if (n == 0)
+					return 1;
+			}
+			if (x <= 1)
+				return x; // 0 or 1
+			
+			uint y = 1;
+			
+			//TODO: Rewrite this eyesore to use a properly terminating loop.
+			while(true)
+			{
+				if ((n & 1) == 1)
+					y = Multiply(y, x, m);
+				n >>= 1;
+				if (n == 0)
+					return y;
+				x = Sqr(x, m);
+			}
+		}
+		
 		#region External PARI functions
 		#region Header
 		//TODO: Wrap this.
