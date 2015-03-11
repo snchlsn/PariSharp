@@ -37,7 +37,7 @@ namespace PariSharp
 			/// <inheritdoc/>
 			public bool MoveNext()
 			{
-				return (current = u_forprime_next_fast(t)) != 0;
+				return (current = u_forprime_next(t)) != 0;
 			}
 			
 			#region Header
@@ -77,9 +77,6 @@ namespace PariSharp
 			#endregion
 			[DllImport(GP.DllName)]
 			internal static extern uint u_forprime_next(IntPtr t);
-			
-			[DllImport(GP.DllName)]
-			internal static extern uint u_forprime_next_fast(IntPtr t);
 			#endregion
 			
 			public Enumerator(uint start = 2, uint end = uint.MaxValue)

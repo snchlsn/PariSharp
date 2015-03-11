@@ -45,7 +45,7 @@ namespace PariSharp
 				if (++current == nextPrime)
 				{
 					++current;
-					nextPrime = SmallPrimeSieve.Enumerator.u_forprime_next_fast(t);
+					nextPrime = SmallPrimeSieve.Enumerator.u_forprime_next(t);
 				}
 				return current <= end;
 			}
@@ -74,7 +74,7 @@ namespace PariSharp
 				SmallPrimeSieve.Enumerator.u_forprime_init(t, start, end);
 				
 				current = start - 1;
-				nextPrime = SmallPrimeSieve.Enumerator.u_forprime_next_fast(t);
+				nextPrime = SmallPrimeSieve.Enumerator.u_forprime_next(t);
 				this.end = end;
 			}
 		}
