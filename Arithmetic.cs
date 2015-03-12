@@ -203,11 +203,11 @@ namespace PariSharp
 		[DllImport(GP.DllName, EntryPoint = "cgcd")]
 		public static extern int GCD(int x, int y);
 		
-		[DllImport(GP.DllName, EntryPoint = "cgcd")]
-		public static extern uint GCDExtended(int x, int y, out int u, out int v);
-		
 		[DllImport(GP.DllName, EntryPoint = "ugcd")]
 		public static extern uint GCD(uint x, uint y);
+		
+		[DllImport(GP.DllName, EntryPoint = "cbezout")]
+		public static extern uint GCDExtended(uint x, uint y, out uint u, out uint v);
 		
 		#region Header
 		/// <summary>
